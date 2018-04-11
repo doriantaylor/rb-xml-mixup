@@ -28,14 +28,9 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+`rdoc mixup`
 
 ## Development
-
-After checking out the repo, run `bin/setup` to install
-dependencies. Then, run `rake spec` to run the tests. You can also run
-`bin/console` for an interactive prompt that will allow you to
-experiment.
 
 To install this gem onto your local machine, run `bundle exec rake
 install`. To release a new version, update the version number in
@@ -46,9 +41,9 @@ the `.gem` file to [rubygems.org](https://rubygems.org).
 ## Contributing
 
 Bug reports and pull requests are welcome at
-[https://github.com/doriantaylor/rb-mixup].
+https://github.com/doriantaylor/rb-mixup.
 
 ## License
 
 This software is provided under
-the [https://www.apache.org/licenses/LICENSE-2.0](Apache License 2.0).
+the [Apache License, 2.0](https://www.apache.org/licenses/LICENSE-2.0).
