@@ -121,7 +121,7 @@ module Mixup
           target  = children[0]
           content = ''
           if (c = children[1..children.length]) and c.length > 0
-            warn c.inspect
+            #warn c.inspect
             content = flatten(c, args)
           else
             content = attr.sort.map { |pair|
@@ -131,7 +131,7 @@ module Mixup
               
           node = Nokogiri::XML::ProcessingInstruction.new(doc, target, content)
 
-          warn node.inspect, content
+          #warn node.inspect, content
 
           # attach it
           ADJACENT[adj].call node, nodes[adj]
