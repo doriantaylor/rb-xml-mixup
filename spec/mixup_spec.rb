@@ -29,6 +29,7 @@ RSpec.describe Mixup do
   it "subsequent content makes child nodes" do
     node = obj.markup spec: { nil => [:foo, 'hi'] }
     expect(node).to be_a Nokogiri::XML::Text
+    expect(node.parent).to be_a Nokogiri::XML::Element
   end
 
   it "sets an appropriate namespace" do
@@ -55,5 +56,31 @@ RSpec.describe Mixup do
                               type: 'text/xsl', href: '/transform' },
                              { nil => :html, xmlns: XHTMLNS }]
     #warn node.document
+  end
+
+  it "can take the compact syntax" do
+    node = obj.markup spec: { ['hi'] => :foo, xmlns: 'urn:x-dummy' }
+    expect(node.to_s).to eq('hi')
+    # warn node.document
+    expect(node.parent.name).to eq('foo')
+    expect(node.parent.namespace.href).to eq('urn:x-dummy')
+  end
+
+  it "can take the `#foo` compact syntax" do
+    node = obj.markup spec: [{ '#dtd' => 'html' },
+                             { '#pi' => 'xml-stylesheet', type: 'text/xsl',
+                              href: '/transform' },
+                             { '#html' =>
+                              [{ '#head' =>
+                                 [{ '#title' => 'hi' },
+                                  { '#tag' => 'base', href: 'http://foo.bar/' },
+                                 ]},
+                               { '#body' => :lol,
+                                typeof: 'foaf:Document' } ],
+                            xmlns: XHTMLNS,
+                             },
+                            ]
+    # warn node.document
+    expect(node.to_s).to eq 'lol'
   end
 end
