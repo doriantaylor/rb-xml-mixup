@@ -76,17 +76,19 @@ fun. Good luck with that.
 ### Enter `XML::Mixup`
 
 * __The input consists of ordinary Ruby data objects__ so you can
-  build them up ahead of time, in bulk, transform them, etc.,
+  build them up ahead of time, in bulk, transform them using familiar
+  operations, etc.,
 * __Sprinkle pre-built XML subtrees anywhere into the spec__ so you
   can memoize repeating elements, or otherwise compile a document
   incrementally,
 * __Attach new generated content anywhere:__ underneath a parent node,
   or before, after, or _instead of_ a node at the sibling level.
 
-## The spec format
+## The tree spec format
 
 At the heart of this module is a single method called `markup`, which,
-among other things, takes a `:spec`. The spec can be any composite
+among other things, takes a `:spec`. The spec can be any composite of
+these objects, and will behave as described:
 
 ### Hashes
 
@@ -187,16 +189,22 @@ another `Proc`.)
 
 Turned into a text node.
 
+## Documentation
+
+Generated and deposited [in the usual place](http://www.rubydoc.info/gems/xml-mixup/).
+
 ## Installation
 
 Come on, you know how to do this:
 
     $ gem install xml-mixup
 
+Or, [download it off rubygems.org](https://rubygems.org/gems/xml-mixup).
+
 ## Contributing
 
 Bug reports and pull requests are welcome at
-https://github.com/doriantaylor/rb-xml-mixup.
+[the GitHub repository](https://github.com/doriantaylor/rb-xml-mixup).
 
 ## The Future
 
@@ -208,7 +216,7 @@ make more streamlined methods. This may or may not make the same kind
 of sense with Ruby.
 
 In particular, these methods do not touch the calling object's
-state. In fact they should be completely stateless nad side-effect
+state. In fact they should be completely stateless and side-effect
 free. Likewise, they are really meant to be private. As such, it may
 make sense to simply bundle them as class methods and use them as
 such. I don't know, I haven't decided yet.
