@@ -112,10 +112,10 @@ module XML::Mixup
     ADJACENT.keys do |k|
       if nodes[k]
         if adj
-          raise
+          raise "Cannot bind to #{k}: #{adj} is already present"
         end
         unless nodes[k].is_a? Nokogiri::XML::Node
-          raise
+          raise "#{k} must be an XML node"
         end
         adj = k
       end
@@ -126,7 +126,7 @@ module XML::Mixup
       doc ||= nodes[adj].document
       unless adj == 'parent'
         unless (nodes[:parent] = nodes[adj].parent)
-          raise
+          raise "#{adj} node must have a parent node!"
         end
       end
     else
@@ -222,7 +222,7 @@ module XML::Mixup
         elsif name == '#pi' or name == '#processing-instruction'
           # now processing instructions
           if children.empty?
-            raise
+            raise "Processing instruction must have at least a target"
           end
           target  = children[0]
           content = ''
@@ -245,7 +245,7 @@ module XML::Mixup
         elsif name == '#dtd' or name == '#doctype'
           # now doctype declarations
           if children.empty?
-            raise
+            raise "DTD node must have a root element declaration"
           end
 
           # assign as if these are args
@@ -255,7 +255,7 @@ module XML::Mixup
           sys ||= attr[:system] if attr[:system]
 
           # XXX for some reason this is an *internal* subset?
-          node = doc.create_internal_subset(root, pub, sys)
+          node = doc.create_internal_subset(root, pub.to_s, sys.to_s)
 
           # at any rate it doesn't have to be explicitly attached
 
@@ -319,7 +319,7 @@ module XML::Mixup
 
           # there should be no nil namespace declarations now
           if ns.has_value? nil
-            raise
+            raise 'INTERNAL ERROR: nil namespace declaration'
           end
 
           # generate the node
@@ -466,7 +466,7 @@ module XML::Mixup
   private
 
   def element tag, doc: nil, ns: {}, attr: {}, args: []
-    raise unless doc
+    raise 'Document node must be present' unless doc
     prefix = local = nil
     if tag.respond_to? :to_a
       prefix, local = tag

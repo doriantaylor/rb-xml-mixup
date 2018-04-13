@@ -44,20 +44,20 @@ Ruby, and found a lot of the same things:
 
 Granted it's a lot nicer to do this sort of thing in Ruby, but at the
 end of the day, the thing generating the XML is a nested list of
-method calls---_not_ a declarative data structure.
+method calls — _not_ a declarative data structure.
 
 ### Document has to be generated all in one shot
 
 It's not super-easy to generate a piece of the target document and
 then go back and generate some more (although
-{Nokogiri::XML::Builder.with} is a nice start). This plus the last
+`Nokogiri::XML::Builder.with` is a nice start). This plus the last
 point leads to all sorts of cockamamy constructs which are almost as
 life-sucking as writing raw DOM routines.
 
 ### Hard to do surgery on existing documents
 
 This comes up a lot: you have an existing document and you want to add
-even just a single node to it---say, in between two nodes just for
+even just a single node to it — say, in between two nodes just for
 fun. Good luck with that.
 
 ### Enter `XML::Mixup`
@@ -77,7 +77,7 @@ among other things, takes a `:spec`. The spec can be any composite
 
 ### Hashes
 
-The principal construct in `XML::Mixup` is the {Hash}. You can
+The principal construct in `XML::Mixup` is the `Hash`. You can
 generate pretty much any node with it:
 
 #### Elements
@@ -115,7 +115,7 @@ Attributes are sorted lexically. Composite attribute values get
 flattened like this:
 
 ```ruby
-{ nil => :foo, array: [:a :b], hash: { e: :f, c: :d } }
+{ nil => :foo, array: [:a, :b], hash: { e: :f, c: :d } }
 # => <foo array="a b" hash="c: d e: f"/>
 ```
 
