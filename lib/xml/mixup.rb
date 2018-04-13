@@ -255,7 +255,11 @@ module XML::Mixup
           sys ||= attr[:system] if attr[:system]
 
           # XXX for some reason this is an *internal* subset?
-          node = doc.create_internal_subset(root, pub.to_s, sys.to_s)
+          # anyway these may not be strings and upstream is not forgiving
+          node = doc.create_internal_subset(root.to_s,
+                                            pub.nil? ? pub : pub.to_s,
+                                            sys.nil? ? sys : sys.to_s)
+
 
           # at any rate it doesn't have to be explicitly attached
 

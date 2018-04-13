@@ -30,6 +30,19 @@ node = something.markup spec: [
 
 doc = node.document
 puts doc.to_xml
+# => <?xml version="1.0"?>
+# => <?xml-stylesheet href="/transform" type="text/xsl"?>
+# => <!DOCTYPE html>
+# => <html xmlns="http://www.w3.org/1999/xhtml">
+# =>   <head>
+# =>     <title>look ma, title</title>
+# =>     <base href="http://the.base/url"/>
+# =>   </head>
+# =>   <body>
+# =>     <h1>Illustrious Heading</h1>
+# =>     <p>lolwut</p>
+# =>   </body>
+# => </html>
 ```
 
 ## Yet another XML markup generator?
