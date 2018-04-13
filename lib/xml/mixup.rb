@@ -1,7 +1,7 @@
-require 'mixup/version'
+require 'xml/mixup/version'
 require 'nokogiri'
 
-module Mixup
+module XML::Mixup
 
   # 
 
@@ -44,18 +44,35 @@ module Mixup
 
   # Generates an XML tree from a given specification.
   #
+  #  require 'xml-mixup'
+  #
   #  class Anything
-  #    include Mixup
+  #    include XML::Mixup
   #  end
   #
   #  something = Anything.new
   #
+  #  # generate a structure
   #  node = something.markup spec: [
-  #    { '#pi' => 'xml-stylesheet', type: 'text/xsl', href: '/transform' },
-  #    { '#dtd' => :html },
-  #    { ['xml-stylesheet'] => '#pi', type: 'text/xsl', href: '/transform' },
-  #    { [] => '#dtd' },
+  #    { '#pi'   => 'xml-stylesheet', type: 'text/xsl', href: '/transform' },
+  #    { '#dtd'  => :html },
+  #    { '#html' => [
+  #      { '#head' => [
+  #        { '#title' => 'look ma, title' },
+  #        { '#elem'  => :base, href: 'http://the.base/url' },
+  #      ] },
+  #      { '#body' => [
+  #        { '#h1' => 'Illustrious Heading' },
+  #        { '#p'  => :lolwut },
+  #      ] },
+  #    ], xmlns: 'http://www.w3.org/1999/xhtml' }
   #  ]
+  #
+  #  # `node` will correspond to the last thing generated. In this
+  #  # case, it will be a text node containing 'lolwut'.
+  #
+  #  doc = node.document
+  #  puts doc.to_xml  
   #
   # @param spec [Hash, Array, Nokogiri::XML::Node, Proc, #to_s] An XML
   #  tree specification. May be composed of multiple hashes and
@@ -247,6 +264,11 @@ module Mixup
 
           # attach it (?)
           #ADJACENT[adj].call node, nodes[adj]
+        elsif name == '#cdata'
+          # let's not forget cdata sections
+          node = doc.create_cdata flatten(children, args)
+          # attach it
+          ADJACENT[adj].call node, nodes[adj]
 
         else
           # finally, an element

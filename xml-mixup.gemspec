@@ -1,17 +1,17 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "mixup/version"
+require "xml/mixup/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "mixup"
-  spec.version       = Mixup::VERSION
+  spec.name          = "xml-mixup"
+  spec.version       = XML::Mixup::VERSION
   spec.authors       = ["Dorian Taylor"]
   spec.email         = ["code@doriantaylor.com"]
   spec.license       = 'Apache-2.0'
   spec.summary       = %q{A mixin for (XML) markup}
-  spec.description   = %q{Mixup uses declarative data structures to incrementally generate XML.}
-  spec.homepage      = "https://github.com/doriantaylor/rb-mixup"
+  spec.description   = %q{XML::Mixup uses declarative data structures to incrementally generate XML.}
+  spec.homepage      = "https://github.com/doriantaylor/rb-xml-mixup"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.

@@ -1,10 +1,10 @@
-# Mixup: A mixin for markup
+# XML::Mixup: A mixin for markup
 
 ```ruby
-require 'mixup'
+require 'xml-mixup'
 
 module Something
-  include Mixup
+  include XML::Mixup
 
   # ...
 end
@@ -41,7 +41,7 @@ the `.gem` file to [rubygems.org](https://rubygems.org).
 ## Contributing
 
 Bug reports and pull requests are welcome at
-https://github.com/doriantaylor/rb-mixup.
+https://github.com/doriantaylor/rb-xml-mixup.
 
 ## License
 

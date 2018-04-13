@@ -1,10 +1,10 @@
-RSpec.describe Mixup do
+RSpec.describe XML::Mixup do
   it "has a version number" do
-    expect(Mixup::VERSION).not_to be nil
+    expect(XML::Mixup::VERSION).not_to be nil
   end
 
   class TestMixup
-    include Mixup
+    include XML::Mixup
   end
 
   XHTMLNS = 'http://www.w3.org/1999/xhtml'
@@ -67,9 +67,9 @@ RSpec.describe Mixup do
   end
 
   it "can take the `#foo` compact syntax" do
-    node = obj.markup spec: [{ '#dtd' => 'html' },
-                             { '#pi' => 'xml-stylesheet', type: 'text/xsl',
+    node = obj.markup spec: [{ '#pi' => 'xml-stylesheet', type: 'text/xsl',
                               href: '/transform' },
+                             { '#dtd' => 'html' },
                              { '#html' =>
                               [{ '#head' =>
                                  [{ '#title' => 'hi' },

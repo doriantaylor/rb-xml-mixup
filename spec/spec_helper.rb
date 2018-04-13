@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "mixup"
+require "xml-mixup"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
