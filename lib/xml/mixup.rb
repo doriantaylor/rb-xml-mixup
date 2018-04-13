@@ -359,6 +359,10 @@ module XML::Mixup
   # Generates an XHTML stub, with optional RDFa attributes. All
   # parameters are optional.
   #
+  # __This method is still under development.__ I am still trying to
+  # figure out how I want it to behave. Some parts may not work as
+  # advertised.
+  #
   # @param doc [Nokogiri::XML::Document, nil] an optional document.
   #
   # @param base [#to_s] the contents of +<base href=""/>+.

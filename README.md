@@ -198,6 +198,21 @@ Come on, you know how to do this:
 Bug reports and pull requests are welcome at
 https://github.com/doriantaylor/rb-xml-mixup.
 
+## The Future
+
+As mentioned, this is pretty much a straight-across port
+of [Role::Markup::XML](https://metacpan.org/pod/Role::Markup::XML),
+where it makes sense in Perl to bolt a bunch of related pseudo-private
+`_FOO`-looking instance methods onto an object so you can use them to
+make more streamlined methods. This may or may not make the same kind
+of sense with Ruby.
+
+In particular, these methods do not touch the calling object's
+state. In fact they should be completely stateless nad side-effect
+free. Likewise, they are really meant to be private. As such, it may
+make sense to simply bundle them as class methods and use them as
+such. I don't know, I haven't decided yet.
+
 ## License
 
 This software is provided under
