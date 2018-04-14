@@ -124,7 +124,14 @@ generate pretty much any node with it:
 
 # or, shove your child nodes into an otherwise content-less key
 { [:hi] => :foo, bar: :hurr }       # => <foo bar="hurr">hi</foo>
+
+# or, if the element name is not a reserved word
+{ '#html' => { '#head' => { '#title' => :hi }} }
+# => <html><head><title>hi</title></head></html>
 ```
+
+Reserved `#keywords` are: `#comment`, `#cdata`, `#doctype`, `#dtd`,
+`#elem`, `#element`, `#pi` `#processing-instruction`, `#tag`.
 
 Attributes are sorted lexically. Composite attribute values get
 flattened like this:
@@ -191,7 +198,8 @@ Turned into a text node.
 
 ## Documentation
 
-Generated and deposited [in the usual place](http://www.rubydoc.info/gems/xml-mixup/).
+Generated and deposited
+[in the usual place](http://www.rubydoc.info/gems/xml-mixup/).
 
 ## Installation
 
@@ -216,7 +224,7 @@ make more streamlined methods. This may or may not make the same kind
 of sense with Ruby.
 
 In particular, these methods do not touch the calling object's
-state. In fact they should be completely stateless and side-effect
+state. In fact they _should_ be completely stateless and side-effect
 free. Likewise, they are really meant to be private. As such, it may
 make sense to simply bundle them as class methods and use them as
 such. I don't know, I haven't decided yet.
