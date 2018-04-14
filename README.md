@@ -128,10 +128,17 @@ generate pretty much any node with it:
 # or, if you have content and the element name is not a reserved word
 { '#html' => { '#head' => { '#title' => :hi } } }
 # => <html><head><title>hi</title></head></html>
+
+# also works with namespaces
+{ '#atom:feed' => nil, 'xmlns:atom' => 'http://www.w3.org/2005/Atom' }
+# => <atom:feed xmlns:atom="http://www.w3.org/2005/Atom"/>
 ```
 
 Reserved hash keywords are: `#comment`, `#cdata`, `#doctype`, `#dtd`,
-`#elem`, `#element`, `#pi`, `#processing-instruction`, `#tag`.
+`#elem`, `#element`, `#pi`, `#processing-instruction`, `#tag`. Note
+that the constructs `{ nil => :foo }`, `{ nil => 'foo' }`, and `{
+'#foo' => nil }`, plus `[]` anywhere you see `nil`, are all
+equivalent.
 
 Attributes are sorted lexically. Composite attribute values get
 flattened like this:
