@@ -125,13 +125,13 @@ generate pretty much any node with it:
 # or, shove your child nodes into an otherwise content-less key
 { [:hi] => :foo, bar: :hurr }       # => <foo bar="hurr">hi</foo>
 
-# or, if the element name is not a reserved word
+# or, if you have content and the element name is not a reserved word
 { '#html' => { '#head' => { '#title' => :hi } } }
 # => <html><head><title>hi</title></head></html>
 ```
 
 Reserved hash keywords are: `#comment`, `#cdata`, `#doctype`, `#dtd`,
-`#elem`, `#element`, `#pi` `#processing-instruction`, `#tag`.
+`#elem`, `#element`, `#pi`, `#processing-instruction`, `#tag`.
 
 Attributes are sorted lexically. Composite attribute values get
 flattened like this:
