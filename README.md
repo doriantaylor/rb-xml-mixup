@@ -126,11 +126,11 @@ generate pretty much any node with it:
 { [:hi] => :foo, bar: :hurr }       # => <foo bar="hurr">hi</foo>
 
 # or, if the element name is not a reserved word
-{ '#html' => { '#head' => { '#title' => :hi }} }
+{ '#html' => { '#head' => { '#title' => :hi } } }
 # => <html><head><title>hi</title></head></html>
 ```
 
-Reserved `#keywords` are: `#comment`, `#cdata`, `#doctype`, `#dtd`,
+Reserved hash keywords are: `#comment`, `#cdata`, `#doctype`, `#dtd`,
 `#elem`, `#element`, `#pi` `#processing-instruction`, `#tag`.
 
 Attributes are sorted lexically. Composite attribute values get
