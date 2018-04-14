@@ -100,11 +100,11 @@ generate pretty much any node with it:
 ```ruby
 { '#tag' => 'foo' }                 # => <foo/>
 
-# or
-{ '#elem' => 'foo' }                # => <foo/>
-
 # or, with the element name as a symbol
 { '#element' => :foo }              # => <foo/>
+
+# or
+{ '#elem' => 'foo' }                # => <foo/>
 
 # or, with nil as a key
 { nil => :foo }                     # => <foo/>
