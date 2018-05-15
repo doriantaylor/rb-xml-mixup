@@ -1,5 +1,6 @@
 require 'xml/mixup/version'
 require 'nokogiri'
+require 'set'
 
 module XML::Mixup
 
@@ -9,26 +10,26 @@ module XML::Mixup
   private
   
   ADJACENT = {
-              parent:  lambda do |node, parent|
-                if parent.node_type == 9 and node.node_type == 1
-                  parent.root = node
-                elsif node.node_type == 11
-                  node.children.each do |child|
-                    parent.add_child(child)
-                  end
-                else
-                  parent.add_child(node)
-                end
-              end,
-              before:  lambda do |node, sibling|
-                sibling.add_previous_sibling node
-              end,
-              after:   lambda { |node, sibling| sibling.add_next_sibling node },
-              replace: lambda { |node, target|  target.replace node },
-             }.freeze
+    parent:  lambda do |node, parent|
+      if parent.node_type == 9 and node.node_type == 1
+        parent.root = node
+      elsif node.node_type == 11
+        node.children.each do |child|
+          parent.add_child(child)
+        end
+      else
+        parent.add_child(node)
+      end
+    end,
+    before:  lambda do |node, sibling|
+      sibling.add_previous_sibling node
+    end,
+    after:   lambda { |node, sibling| sibling.add_next_sibling node },
+    replace: lambda { |node, target|  target.replace node },
+  }.freeze
 
-  RESERVED = %w{comment cdata doctype dtd elem element
-              pi processing-instruction tag}.map {|x| "##{x}"}.to_set.freeze
+  RESERVED = Set.new(%w{comment cdata doctype dtd elem element
+    pi processing-instruction tag}.map {|x| "##{x}"}).freeze
 
   public
 
@@ -478,7 +479,7 @@ module XML::Mixup
     prefix = local = nil
     if tag.respond_to? :to_a
       prefix, local = tag
-      tag = tag.join ':'
+      tag = tag[0..1].join ':'
     end
     elem = doc.create_element tag.to_s
     ns.sort.each do |p, u|
