@@ -25,7 +25,7 @@ module XML::Mixup
       sibling.add_previous_sibling node
     end,
     after:   lambda { |node, sibling| sibling.add_next_sibling node },
-    replace: lambda { |node, target|  target.replace node },
+    replace: lambda { |node, target| target.replace node },
   }.freeze
 
   RESERVED = Set.new(%w{comment cdata doctype dtd elem element
@@ -110,7 +110,7 @@ module XML::Mixup
   def markup spec: nil, doc: nil, args: [], **nodes
     # handle adjacent node declaration
     adj = nil
-    ADJACENT.keys do |k|
+    ADJACENT.keys.each do |k|
       if nodes[k]
         if adj
           raise "Cannot bind to #{k}: #{adj} is already present"
@@ -125,7 +125,7 @@ module XML::Mixup
     # generate doc/parent
     if adj
       doc ||= nodes[adj].document
-      unless adj == 'parent'
+      unless adj.to_sym == :parent
         unless (nodes[:parent] = nodes[adj].parent)
           raise "#{adj} node must have a parent node!"
         end

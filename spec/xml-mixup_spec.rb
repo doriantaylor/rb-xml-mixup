@@ -83,4 +83,14 @@ RSpec.describe XML::Mixup do
     # warn node.document
     expect(node.to_s).to eq 'lol'
   end
+
+  it "can replace a node like it says in the docs" do
+    node = obj.markup spec: { [{ nil => :bar }] => :foo }
+    doc  = node.document
+
+    node2 = obj.markup replace: node, spec: { nil => :lol }
+
+    expect(doc.root.first_element_child.name).to eq 'lol'
+    
+  end
 end
