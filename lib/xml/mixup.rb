@@ -360,7 +360,7 @@ module XML::Mixup
   # Generates an XHTML stub, with optional RDFa attributes. All
   # parameters are optional.
   #
-  # __This method is still under development.__ I am still trying to
+  # *This method is still under development.* I am still trying to
   # figure out how I want it to behave. Some parts may not work as
   # advertised.
   #
@@ -425,7 +425,7 @@ module XML::Mixup
 
     # add xslt stylesheet
     if transform
-      spec << (transform.is_a? Hash ? transform :
+      spec << (transform.is_a?(Hash) ? transform :
                { nil => ['#pi', 'xml-stylesheet'],
                 type: 'text/xsl', href: transform.to_s })
     end
@@ -439,13 +439,12 @@ module XML::Mixup
     # construct document tree
 
     head ||= {}
-    if head.empty? 
+    if head.respond_to?(:empty) and head.empty? 
       head[nil] = [:head, title, base, link, meta, style, script]
     end
 
     body ||= {}
-    if body.empty?
-      
+    if body.respond_to?(:empty?) and body.empty?
       body[nil] = [:body, content]
     end
 

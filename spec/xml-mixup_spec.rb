@@ -93,4 +93,10 @@ RSpec.describe XML::Mixup do
     expect(doc.root.first_element_child.name).to eq 'lol'
     
   end
+
+  it "does handles the transform parameter correctly" do
+    doc = obj.xhtml_stub(transform: '/transform').document
+    expect(doc.at_xpath(
+      "processing-instruction('xml-stylesheet')")).not_to be_nil
+  end
 end
