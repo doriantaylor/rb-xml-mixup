@@ -302,7 +302,7 @@ module XML::Mixup
           # now go over the attributes and set any missing namespaces to nil
           at.keys.each do |k|
             p, _ = /^(?:([^:]+):)?(.+)$/.match(k).captures
-            ns[p] ||= nil
+            ns[p] ||= nil if p != 'xml'
           end
           # also do the tag prefix but only if there is a local name
           ns[prefix] ||= nil if local
@@ -324,7 +324,7 @@ module XML::Mixup
 
           # there should be no nil namespace declarations now
           if ns.has_value? nil
-            raise 'INTERNAL ERROR: nil namespace declaration'
+            raise "INTERNAL ERROR: nil namespace declaration: #{ns}"
           end
 
           # generate the node
@@ -373,7 +373,8 @@ module XML::Mixup
   # 
   # @param vocab [#to_s] the contents of the root node's +vocab=+.
   #
-  # @param lang [#to_s] the contents of +lang=+ and when applicable, +xml:lang+.
+  # @param lang [#to_s] the contents of +lang=+ and when applicable,
+  #  +xml:lang+.
   #
   # @param title [#to_s, #to_a, Hash] the contents of the +<title>+
   #  tag. When given as an array-like object, all elements after the
@@ -381,9 +382,11 @@ module XML::Mixup
   #  the +property=+ attribute. When given as a {Hash}, it will be
   #  coerced into a snippet of spec that produces the appropriate tag.
   #
-  # @param link [#to_a, Hash] A spec describing one or more +<link/>+ elements.
+  # @param link [#to_a, Hash] A spec describing one or more +<link/>+
+  #  elements.
   #
-  # @param meta [#to_a, Hash] A spec describing one or more +<meta/>+ elements.
+  # @param meta [#to_a, Hash] A spec describing one or more +<meta/>+
+  #  elements.
   #
   # @param style [#to_a, Hash] A spec describing one or more
   #  +<style/>+ elements.
@@ -391,12 +394,16 @@ module XML::Mixup
   # @param script [#to_a, Hash] A spec describing one or more
   #  +<script/>+ elements.
   #
+  # @param extra [#to_a, Hash] A spec describing any extra elements
+  #  inside +<head>+ that aren't in the previous categories.
+  #
   # @param attr [Hash] A spec containing attributes for the +<body>+.
   #
   # @param content [Hash, Array, Nokogiri::XML::Node, ...] A spec which
   #  will be attached underneath the +<body>+.
   #
-  # @param head [Hash] A spec which overrides the entire +<head>+.
+  # @param head [Hash, Array] A Hash spec which overrides the entire
+  #  +<head>+ element, or otherwise an array of its children.
   #
   # @param body [Hash] A spec which overrides the entire +<body>+.
   #
@@ -418,7 +425,7 @@ module XML::Mixup
 
   def xhtml_stub doc: nil, base: nil, ns: {}, prefix: {}, vocab: nil,
       lang: nil, title: nil, link: [], meta: [], style: [], script: [],
-      head: {}, body: {}, attr: {}, content: [],
+      extra: [], head: {}, body: {}, attr: {}, content: [],
       transform: nil, dtd: true, xmlns: true, args: []
 
     spec = []
@@ -426,8 +433,7 @@ module XML::Mixup
     # add xslt stylesheet
     if transform
       spec << (transform.is_a?(Hash) ? transform :
-               { nil => ['#pi', 'xml-stylesheet'],
-                type: 'text/xsl', href: transform.to_s })
+        { '#pi' => 'xml-stylesheet', type: 'text/xsl', href: transform })
     end
 
     # add doctype declaration
@@ -436,19 +442,47 @@ module XML::Mixup
       spec << { nil => %w{#dtd html} + ps }
     end
 
+    # normalize title
+
+    if title.nil? or (title.respond_to?(:empty?) and title.empty?)
+      title = { '#title' => '' } # add an empty string for closing tag
+    elsif title.is_a? Hash
+      # nothing
+    elsif title.respond_to? :to_a
+      title = title.to_a
+      text  = title.shift
+      props = title
+      title = { '#title' => text }
+      title[:property] = props unless props.empty?
+    else
+      title = { '#title' => title }
+    end
+
+    # normalize base
+
+    if base and not base.is_a? Hash
+      base = { nil => :base, href: base }
+    end
+
+    # TODO normalize link, meta, style, script elements
+
     # construct document tree
 
     head ||= {}
-    if head.respond_to?(:empty) and head.empty? 
-      head[nil] = [:head, title, base, link, meta, style, script]
+    if head.is_a? Hash and head.empty? 
+      head[nil] = [:head, title, base, link, meta, style, script, extra]
+    elsif head.is_a? Array
+      # children of unmarked head element
+      head = { nil => [:head] + head }
     end
 
     body ||= {}
-    if body.respond_to?(:empty?) and body.empty?
+    if body.is_a? Hash and body.empty?
       body[nil] = [:body, content]
+      body = attr.merge(body) if attr and attr.is_a?(Hash)
     end
 
-    root = { nil => [:html, [head, body]] }
+    root = { nil => [:html, head, body] }
     root[:vocab] = vocab if vocab
     root[:lang]  = lang  if lang
 
@@ -458,31 +492,52 @@ module XML::Mixup
 
       # namespaced language attribute
       root['xml:lang'] = lang if lang
+
+      if !prefix and xmlns.is_a? Hash
+        x = prefix.transform_keys { |k| "xmlns:#{k}" }
+        root = x.merge(root)
+      end
     end
 
     # deal with prefixes distinct from namespaces
-    if prefix
+    prefix ||= {}
+    if prefix.respond_to? :to_h
+      prefix = prefix.to_h
+      unless prefix.empty?
+        # this will get automatically smushed into the right shape
+        root[:prefix] = prefix
+
+        if xmlns
+          x = prefix.transform_keys { |k| "xmlns:#{k}" }
+          root = x.merge(root)
+        end
+      end
     end
 
     # add the document structure to the spec
     spec << root
 
     # as usual this will return the last innermost node
-    markup spec: spec, doc: doc
+    markup spec: spec, doc: doc, args: args
   end
 
   private
 
   def element tag, doc: nil, ns: {}, attr: {}, args: []
     raise 'Document node must be present' unless doc
-    prefix = local = nil
+    pfx = nil
     if tag.respond_to? :to_a
-      prefix, local = tag
-      tag = tag[0..1].join ':'
+      pfx = tag[0]
+      tag = tag.to_a[0..1].join ':'
+    elsif m = tag.match(/([^:]+):/)
+      pfx = m[1]
     end
+
     elem = doc.create_element tag.to_s
-    ns.sort.each do |p, u|
-      elem.add_namespace((p.nil? ? p : p.to_s), u.to_s)
+    elem.default_namespace = ns[pfx] if ns[pfx]
+
+    ns.keys.sort { |a, b| a.to_s <=> b.to_s }.each do |p|
+      elem.add_namespace((p.nil? ? p : p.to_s), ns[p].to_s)
     end
     attr.sort.each do |k, v|
       elem[k.to_s] = flatten(v, args)
@@ -491,7 +546,7 @@ module XML::Mixup
     elem
   end
 
-  ATOMS = [String, Symbol, Numeric, NilClass, FalseClass, TrueClass]
+  ATOMS = [String, Symbol, Numeric, NilClass, FalseClass, TrueClass].freeze
 
   # yo dawg
 

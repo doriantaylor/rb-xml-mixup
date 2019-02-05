@@ -8,6 +8,7 @@ RSpec.describe XML::Mixup do
   end
 
   XHTMLNS = 'http://www.w3.org/1999/xhtml'
+  SVGNS   = 'http://www.w3.org/2000/svg'
 
   obj = TestMixup.new
 
@@ -43,6 +44,10 @@ RSpec.describe XML::Mixup do
       parent: node
 
     expect(node.xpath('count(//node())')).to eq(7)
+
+    node = obj.markup spec: { nil => 'svg:svg', 'xmlns:svg' => SVGNS }
+    expect(node.namespace).to be_a Nokogiri::XML::Namespace
+    expect(node.namespace.href).to eq(SVGNS)
   end
 
   it "can set a DTD" do
@@ -94,7 +99,7 @@ RSpec.describe XML::Mixup do
     
   end
 
-  it "does handles the transform parameter correctly" do
+  it "handles the transform parameter correctly" do
     doc = obj.xhtml_stub(transform: '/transform').document
     expect(doc.at_xpath(
       "processing-instruction('xml-stylesheet')")).not_to be_nil
