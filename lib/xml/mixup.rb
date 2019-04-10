@@ -302,10 +302,14 @@ module XML::Mixup
           # now go over the attributes and set any missing namespaces to nil
           at.keys.each do |k|
             p, _ = /^(?:([^:]+):)?(.+)$/.match(k).captures
-            ns[p] ||= nil if p != 'xml'
+            ns[p] ||= nil
           end
+
           # also do the tag prefix but only if there is a local name
           ns[prefix] ||= nil if local
+
+          # unconditionally remove ns['xml'], we never want it in there
+          ns.delete 'xml'
 
           # pseudo is a stand-in for non-parent adjacent nodes
           pseudo = nodes[:pseudo] || nodes[:parent]

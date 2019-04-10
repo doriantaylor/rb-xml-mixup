@@ -104,4 +104,11 @@ RSpec.describe XML::Mixup do
     expect(doc.at_xpath(
       "processing-instruction('xml-stylesheet')")).not_to be_nil
   end
+
+  it "knows what to do with eg xml:lang" do
+    node = obj.markup spec: {
+      nil => :foo, xmlns: 'http://www.w3.org/1999/xhtml', 'xml:lang' => :en }
+    expect(node['xml:lang']).to eq 'en'
+    warn node.to_s
+  end
 end
