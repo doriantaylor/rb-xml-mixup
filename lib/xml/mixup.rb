@@ -139,6 +139,7 @@ module XML::Mixup
 
     # dispatch based on spec type
     if spec and not (spec.respond_to? :empty? and spec.empty?)
+      spec = spec.to_a if spec.is_a? Nokogiri::XML::NodeSet
       if spec.is_a? Array
         par = adj == :parent ? nodes[:parent] : doc.fragment
         out = spec.map do |x|
@@ -346,7 +347,7 @@ module XML::Mixup
       else
         if spec.is_a? Nokogiri::XML::Node
           # existing node
-          node = spec.dup
+          node = spec.dup 1
         else
           # text node
           node = doc.create_text_node spec.to_s
