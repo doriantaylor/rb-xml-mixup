@@ -148,6 +148,21 @@ flattened like this:
 # => <foo array="a b" hash="c: d e: f"/>
 ```
 
+Note that attribute values can also be a `Proc`, which are fed
+arbitrary arguments from the `markup` method. The `Proc` is expected
+to return something which can subsequently flattened. If an attribute
+value is `nil` or ultimately resolves to `nil`, or an empty `Array` or
+`Hash`, that attribute will be omitted. `nil` values in arrays or
+hashes will also be skipped, as will empty-string values in
+arrays. This is different behaviour from versions prior to 0.1.10,
+where `nil` (or, e.g., `[]`) would produce an attribute containing the
+empty string.
+
+This change was made to eliminate a lot of clunky logic in application
+code to determine whether or not to include a given attribute. If you
+need to render attributes explicitly with empty strings, then
+explicitly pass in the empty string.
+
 #### Processing instructions
 
 ```ruby

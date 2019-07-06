@@ -109,6 +109,23 @@ RSpec.describe XML::Mixup do
     node = obj.markup spec: {
       nil => :foo, xmlns: 'http://www.w3.org/1999/xhtml', 'xml:lang' => :en }
     expect(node['xml:lang']).to eq 'en'
-    warn node.to_s
+    #warn node.to_s
+  end
+
+  it "omits attributes when their supplied values are nil" do
+    node = obj.markup spec: {
+      nil => :foo, xmlns: 'http://www.w3.org/1999/xhtml',
+      test0: '', test1: nil, test2: [], test3: Proc.new { nil },
+      test4: { hi: :there, lol: nil },
+      test5: ['empty', '', 'strings']
+    }
+    #warn node.to_s
+    expect(node.key? 'test0').to be true
+    expect(node.key? 'test1').to be false
+    expect(node.key? 'test2').to be false
+    expect(node.key? 'test3').to be false
+    expect(node.key? 'test4').to be true
+    expect(node['test4']).to eq 'hi: there'
+    expect(node['test5']).to eq 'empty strings'
   end
 end

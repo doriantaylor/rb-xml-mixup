@@ -216,7 +216,7 @@ module XML::Mixup
         # now we dispatch based on the name
         if name == '#comment'
           # first up, comments
-          node = doc.create_comment flatten(children, args)
+          node = doc.create_comment flatten(children, args).to_s
 
           # attach it
           ADJACENT[adj].call node, nodes[adj]
@@ -230,11 +230,12 @@ module XML::Mixup
           content = ''
           if (c = children[1..children.length]) and c.length > 0
             #warn c.inspect
-            content = flatten(c, args)
+            content = flatten(c, args).to_s
           else
             content = attr.sort.map { |pair|
-              "#{pair[0].to_s}=\"#{flatten(pair[1], args)}\""
-            }.join(' ')
+              v = flatten(pair[1], args) or next
+              "#{pair[0].to_s}=\"#{v}\""
+            }.compact.join(' ')
           end
               
           node = Nokogiri::XML::ProcessingInstruction.new(doc, target, content)
@@ -292,11 +293,12 @@ module XML::Mixup
           ns = {}
           at = {}
           attr.each do |k, v|
-            v = flatten(v, args)
-            if (md = /^xmlns(?::(.*))?$/i.match(k.to_s))
+            k = k.to_s
+            v = flatten(v, args) or next
+            if (md = /^xmlns(?::(.*))?$/i.match(k))
               ns[md[1]] = v
             else
-              at[k.to_s] = v
+              at[k] = v
             end
           end
 
@@ -545,26 +547,33 @@ module XML::Mixup
       elem.add_namespace((p.nil? ? p : p.to_s), ns[p].to_s)
     end
     attr.sort.each do |k, v|
-      elem[k.to_s] = flatten(v, args)
+      v = flatten(v, args) or next
+      elem[k.to_s] = v
     end
 
     elem
   end
 
-  ATOMS = [String, Symbol, Numeric, NilClass, FalseClass, TrueClass].freeze
+  ATOMS = [String, Symbol, Numeric, FalseClass, TrueClass].freeze
 
   # yo dawg
 
   def flatten obj, args
+    return if obj.nil?
     # early bailout for most likely condition
     if ATOMS.any? { |x| obj.is_a? x }
       obj.to_s
     elsif obj.is_a? Hash
-      obj.sort.map { |kv| "#{kv[0].to_s}: #{flatten(kv[1], args)}" }.join(' ')
+      tmp = obj.sort.map do |kv|
+        v = flatten(kv[1], args)
+        v.nil? ? nil : "#{kv[0].to_s}: #{v}"
+      end.compact
+      tmp.empty? ? nil : tmp.join(' ')
     elsif obj.respond_to? :call
-      obj.call(*args)
+      flatten(obj.call(*args), args)
     elsif obj.respond_to? :map
-      obj.map { |x| flatten(x, args) }.join(' ')
+      tmp = obj.map { |x| flatten(x, args) }.reject { |x| x.nil? || x == '' }
+      tmp.empty? ? nil : tmp.join(' ')
     else
       obj.to_s
     end
