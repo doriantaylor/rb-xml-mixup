@@ -174,35 +174,36 @@ module XML::Mixup
           else 
             name = x
           end
-        elsif (compact = spec.select { |k, _|
-                 k.respond_to?(:to_a) or k.is_a?(Nokogiri::XML::Node)}) and
-            not compact.empty?
+        elsif (compact = spec.select { |k, _| k.respond_to?(:to_a) or
+                   k.is_a?(Nokogiri::XML::Node)}) and !compact.empty?
           # compact syntax eliminates the `nil` key
           raise %q{Spec can't have duplicate compact keys} if compact.count > 1
           children, name = compact.first
-          children = children.respond_to?(:to_a) ? children.to_a : [children]
-        elsif (special = spec.select { |k, _|
-                 k.respond_to? :to_s and k.to_s.start_with? '#' }) and
-            not special.empty?
+          children = children.is_a?(Hash) ||
+            children.is_a?(Nokogiri::XML::Node) ? [children] : children.to_a 
+        elsif (special = spec.select { |k, _| k.respond_to? :to_s and
+                   k.to_s.start_with? ?# }) and !special.empty?
           # these are special keys 
           raise %q{Spec can't have multiple special keys} if special.count > 1
           name, children = special.first
 
-          if %w{# #elem #element #tag}.any? name
+          if %w{# #elem #element #tag}.include? name
             # then the name is in the `children` slot
             raise "Value of #{name} shorthand formulation" +
-              "must be a valid element name" unless children.to_s
+              "must be a valid element name" unless children.respond_to? :to_s
             name = children
             # set children to empty array
             children = []
           elsif not RESERVED.any? name
             # then the name is encoded into the key and we have to
             # remove the octothorpe
-            name = name[1..name.length]
+            name = name.delete_prefix ?#
+            # note we assign because the object is input and may be frozen
           end
 
           # don't forget to reset the child nodes
-          children = children.respond_to?(:to_a) ? children.to_a : [children]
+          children = children.is_a?(Hash) || !children.respond_to?(:to_a) ?
+            [children] : children.to_a 
         end
 
         # note the name can be nil because it can be inferred
@@ -245,7 +246,7 @@ module XML::Mixup
           # attach it
           ADJACENT[adj].call node, nodes[adj]
 
-        elsif name == '#dtd' or name == '#doctype'
+        elsif %w[#dtd doctype].include? name
           # now doctype declarations
           if children.empty?
             raise "DTD node must have a root element declaration"
