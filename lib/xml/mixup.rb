@@ -246,7 +246,7 @@ module XML::Mixup
           # attach it
           ADJACENT[adj].call node, nodes[adj]
 
-        elsif %w[#dtd doctype].include? name
+        elsif %w[#dtd #doctype].include? name
           # now doctype declarations
           if children.empty?
             raise "DTD node must have a root element declaration"
