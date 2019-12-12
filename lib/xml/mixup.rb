@@ -440,7 +440,8 @@ module XML::Mixup
 
     # add xslt stylesheet
     if transform
-      spec << (transform.is_a?(Hash) ? transform :
+      spec << (transform.is_a?(Nokogiri::XML::ProcessingInstruction) ?
+        transform.dup : transform.is_a?(Hash) ? transform :
         { '#pi' => 'xml-stylesheet', type: 'text/xsl', href: transform })
     end
 
