@@ -3,9 +3,6 @@ require 'nokogiri'
 require 'set'
 
 module XML::Mixup
-
-  # 
-
   # these are node attachment protocols
   private
   
@@ -368,9 +365,9 @@ module XML::Mixup
   # Generates an XHTML stub, with optional RDFa attributes. All
   # parameters are optional.
   #
-  # *This method is still under development.* I am still trying to
-  # figure out how I want it to behave. Some parts may not work as
-  # advertised.
+  # @note *This method is still under development.* I am still trying
+  #  to figure out how I want it to behave. Some parts may not work as
+  #  advertised.
   #
   # @param doc [Nokogiri::XML::Document, nil] an optional document.
   #
@@ -581,4 +578,6 @@ module XML::Mixup
     end
   end
 
+  # add class methods too
+  extend self
 end
