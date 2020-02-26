@@ -48,6 +48,8 @@ module XML::Mixup
   #    include XML::Mixup
   #  end
   #
+  #  # note you can now also just call XML::Mixup.markup
+  #
   #  something = Anything.new
   #
   #  # generate a structure
@@ -77,7 +79,7 @@ module XML::Mixup
   #  arrays. See the spec spec.
   # 
   # @param doc [Nokogiri::XML::Document, nil] an optional XML document
-  #  instance; will be supplied if none given.
+  #  instance; will be created if none given.
   #
   # @param args [#to_a] Any arguments to be passed to any callbacks
   #  anywhere in the spec. Assumed to be an array.
