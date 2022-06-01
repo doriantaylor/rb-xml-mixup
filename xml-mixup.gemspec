@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{A mixin for (XML) markup}
   spec.description   = %q{XML::Mixup uses declarative data structures to incrementally generate XML.}
   spec.homepage      = "https://github.com/doriantaylor/rb-xml-mixup"
-  spec.required_ruby_version = "~> 2.0"
+  spec.required_ruby_version = ">= 2.0"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
@@ -25,5 +25,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.9"
 
-  spec.add_dependency "nokogiri", ">= 1.10.8"
+  spec.add_dependency "nokogiri", ">= 1.13.6"
 end

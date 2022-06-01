@@ -5,7 +5,7 @@ require 'set'
 module XML::Mixup
   # these are node attachment protocols
   private
-  
+
   ADJACENT = {
     parent:  lambda do |node, parent|
       if parent.node_type == 9 and node.node_type == 1
@@ -28,7 +28,64 @@ module XML::Mixup
   RESERVED = Set.new(%w{comment cdata doctype dtd elem element
     pi processing-instruction tag}.map {|x| "##{x}"}).freeze
 
+  ATOMS = [String, Symbol, Numeric, FalseClass, TrueClass].freeze
+
+  def element tag, doc: nil, ns: {}, attr: {}, args: []
+    raise 'Document node must be present' unless doc
+    pfx = nil
+    if tag.respond_to? :to_a
+      pfx = tag[0]
+      tag = tag.to_a[0..1].join ':'
+    elsif m = tag.match(/([^:]+):/)
+      pfx = m[1]
+    end
+
+    elem = doc.create_element tag.to_s
+    elem.default_namespace = ns[pfx] if ns[pfx]
+
+    ns.keys.sort { |a, b| a.to_s <=> b.to_s }.each do |p|
+      elem.add_namespace((p.nil? ? p : p.to_s), ns[p].to_s)
+    end
+    attr.sort.each do |k, v|
+      v = flatten_attr(v, args) or next
+      elem[k.to_s] = v
+    end
+
+    elem
+  end
+
   public
+
+  # Returns a string suitable for an XML attribute.
+  #
+  # @param obj [Object] the object to be flattened
+  # @param args [Array, nil] callback arguments
+  #
+  # @return [String] the attribute in question.
+  #
+  def flatten_attr obj, args = []
+    return if obj.nil?
+    args ||= []
+    # early bailout for most likely condition
+    if ATOMS.any? { |x| obj.is_a? x }
+      obj.to_s
+    elsif obj.is_a? Hash
+      tmp = obj.sort.map do |kv|
+        v = flatten_attr kv.last, args
+        v.nil? ? nil : "#{kv.first.to_s}: #{v}"
+      end.compact
+      tmp.empty? ? nil : tmp.join(' ')
+    elsif obj.respond_to? :call
+      flatten_attr obj.call(*args), args
+    elsif obj.respond_to? :map
+      tmp = obj.map { |x| flatten_attr x, args }.reject do |x|
+        x.nil? || x == ''
+      end
+      tmp.empty? ? nil : tmp.join(' ')
+    else
+      obj.to_s
+    end
+  end
 
   # Generate a handy blank document.
   #
@@ -72,18 +129,18 @@ module XML::Mixup
   #  # case, it will be a text node containing 'lolwut'.
   #
   #  doc = node.document
-  #  puts doc.to_xml  
+  #  puts doc.to_xml
   #
   # @param spec [Hash, Array, Nokogiri::XML::Node, Proc, #to_s] An XML
   #  tree specification. May be composed of multiple hashes and
   #  arrays. See the spec spec.
-  # 
+  #
   # @param doc [Nokogiri::XML::Document, nil] an optional XML document
   #  instance; will be created if none given.
   #
   # @param args [#to_a] Any arguments to be passed to any callbacks
   #  anywhere in the spec. Assumed to be an array.
-  # 
+  #
   # @param parent [Nokogiri::XML::Node] The node under which the
   #  evaluation result of the spec is to be attached. This is the
   #  default adjacent node, which in turn defaults to the document if
@@ -170,7 +227,7 @@ module XML::Mixup
             x = x.to_a
             name = x.shift
             children = x
-          else 
+          else
             name = x
           end
         elsif (compact = spec.select { |k, _| k.respond_to?(:to_a) or
@@ -179,10 +236,10 @@ module XML::Mixup
           raise %q{Spec can't have duplicate compact keys} if compact.count > 1
           children, name = compact.first
           children = children.is_a?(Hash) ||
-            children.is_a?(Nokogiri::XML::Node) ? [children] : children.to_a 
+            children.is_a?(Nokogiri::XML::Node) ? [children] : children.to_a
         elsif (special = spec.select { |k, _| k.respond_to? :to_s and
                    k.to_s.start_with? ?# }) and !special.empty?
-          # these are special keys 
+          # these are special keys
           raise %q{Spec can't have multiple special keys} if special.count > 1
           name, children = special.first
 
@@ -202,7 +259,7 @@ module XML::Mixup
 
           # don't forget to reset the child nodes
           children = children.is_a?(Hash) || !children.respond_to?(:to_a) ?
-            [children] : children.to_a 
+            [children] : children.to_a
         end
 
         # note the name can be nil because it can be inferred
@@ -216,7 +273,7 @@ module XML::Mixup
         # now we dispatch based on the name
         if name == '#comment'
           # first up, comments
-          node = doc.create_comment flatten(children, args).to_s
+          node = doc.create_comment flatten_attr(children, args).to_s
 
           # attach it
           ADJACENT[adj].call node, nodes[adj]
@@ -230,14 +287,14 @@ module XML::Mixup
           content = ''
           if (c = children[1..children.length]) and c.length > 0
             #warn c.inspect
-            content = flatten(c, args).to_s
+            content = flatten_attr(c, args).to_s
           else
             content = attr.sort.map { |pair|
-              v = flatten(pair[1], args) or next
+              v = flatten_attr(pair[1], args) or next
               "#{pair[0].to_s}=\"#{v}\""
             }.compact.join(' ')
           end
-              
+
           node = Nokogiri::XML::ProcessingInstruction.new(doc, target, content)
 
           #warn node.inspect, content
@@ -273,14 +330,14 @@ module XML::Mixup
           #ADJACENT[adj].call node, nodes[adj]
         elsif name == '#cdata'
           # let's not forget cdata sections
-          node = doc.create_cdata flatten(children, args)
+          node = doc.create_cdata flatten_attr(children, args)
           # attach it
           ADJACENT[adj].call node, nodes[adj]
 
         else
           # finally, an element
 
-          raise 'Element name inference NOT IMPLEMENTED' unless name
+          raise "Element name inference NOT IMPLEMENTED: #{spec}" unless name
 
           # first check the name
           prefix = local = nil
@@ -294,7 +351,7 @@ module XML::Mixup
           at = {}
           attr.each do |k, v|
             k = k.to_s
-            v = flatten(v, args) or next
+            v = flatten_attr(v, args) or next
             if (md = /^xmlns(?::(.*))?$/i.match(k))
               ns[md[1]] = v
             else
@@ -337,7 +394,7 @@ module XML::Mixup
           # generate the node
           node = element name, doc: doc, ns: ns, attr: at, args: args
 
-          # attach it 
+          # attach it
           ADJACENT[adj].call node, nodes[adj]
 
           # don't forget the children!
@@ -377,7 +434,7 @@ module XML::Mixup
   #
   # @param prefix [Hash] the contents of the root node's +prefix=+
   #  and +xmlns:*+ attributes.
-  # 
+  #
   # @param vocab [#to_s] the contents of the root node's +vocab=+.
   #
   # @param lang [#to_s] the contents of +lang=+ and when applicable,
@@ -427,7 +484,7 @@ module XML::Mixup
   #  namespaces. Defaults to +true+.
   #
   # @param args [#to_a] Arguments for any callbacks in the spec.
-  # 
+  #
   # @return [Nokogiri::XML::Node] the last node generated, in document order.
 
   def xhtml_stub doc: nil, base: nil, ns: {}, prefix: {}, vocab: nil,
@@ -457,7 +514,7 @@ module XML::Mixup
     elsif title.is_a? Hash
       # nothing
     elsif title.respond_to? :to_a
-      title = title.to_a
+      title = title.to_a.dup
       text  = title.shift
       props = title
       title = { '#title' => text }
@@ -477,7 +534,7 @@ module XML::Mixup
     # construct document tree
 
     head ||= {}
-    if head.is_a? Hash and head.empty? 
+    if head.is_a? Hash and head.empty?
       head[nil] = [:head, title, base, link, meta, style, script, extra]
     elsif head.is_a? Array
       # children of unmarked head element
@@ -529,56 +586,6 @@ module XML::Mixup
     markup spec: spec, doc: doc, args: args
   end
 
-  private
-
-  def element tag, doc: nil, ns: {}, attr: {}, args: []
-    raise 'Document node must be present' unless doc
-    pfx = nil
-    if tag.respond_to? :to_a
-      pfx = tag[0]
-      tag = tag.to_a[0..1].join ':'
-    elsif m = tag.match(/([^:]+):/)
-      pfx = m[1]
-    end
-
-    elem = doc.create_element tag.to_s
-    elem.default_namespace = ns[pfx] if ns[pfx]
-
-    ns.keys.sort { |a, b| a.to_s <=> b.to_s }.each do |p|
-      elem.add_namespace((p.nil? ? p : p.to_s), ns[p].to_s)
-    end
-    attr.sort.each do |k, v|
-      v = flatten(v, args) or next
-      elem[k.to_s] = v
-    end
-
-    elem
-  end
-
-  ATOMS = [String, Symbol, Numeric, FalseClass, TrueClass].freeze
-
-  # yo dawg
-
-  def flatten obj, args
-    return if obj.nil?
-    # early bailout for most likely condition
-    if ATOMS.any? { |x| obj.is_a? x }
-      obj.to_s
-    elsif obj.is_a? Hash
-      tmp = obj.sort.map do |kv|
-        v = flatten(kv[1], args)
-        v.nil? ? nil : "#{kv[0].to_s}: #{v}"
-      end.compact
-      tmp.empty? ? nil : tmp.join(' ')
-    elsif obj.respond_to? :call
-      flatten(obj.call(*args), args)
-    elsif obj.respond_to? :map
-      tmp = obj.map { |x| flatten(x, args) }.reject { |x| x.nil? || x == '' }
-      tmp.empty? ? nil : tmp.join(' ')
-    else
-      obj.to_s
-    end
-  end
 
   # add class methods too
   extend self

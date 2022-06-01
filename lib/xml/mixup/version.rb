@@ -1,5 +1,5 @@
 module XML
   module Mixup
-    VERSION = "0.1.13"
+    VERSION = "0.1.16"
   end
 end
