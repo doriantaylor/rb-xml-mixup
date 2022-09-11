@@ -77,8 +77,8 @@ module XML::Mixup
       tmp.empty? ? nil : tmp.join(' ')
     elsif obj.respond_to? :call
       flatten_attr obj.call(*args), args
-    elsif obj.respond_to? :map
-      tmp = obj.map { |x| flatten_attr x, args }.reject do |x|
+    elsif [Array, Set].any? { |c| obj.is_a? c }
+      tmp = obj.to_a.map { |x| flatten_attr x, args }.reject do |x|
         x.nil? || x == ''
       end
       tmp.empty? ? nil : tmp.join(' ')
