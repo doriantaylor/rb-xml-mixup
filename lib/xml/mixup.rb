@@ -492,6 +492,9 @@ module XML::Mixup
       extra: [], head: {}, body: {}, attr: {}, content: [],
       transform: nil, dtd: true, xmlns: true, args: []
 
+    vocab ||= prefix[nil]
+    prefix = prefix.except nil if prefix
+
     spec = []
 
     # add xslt stylesheet
@@ -573,7 +576,7 @@ module XML::Mixup
         root[:prefix] = prefix
 
         if xmlns
-          x = prefix.transform_keys { |k| "xmlns:#{k}" }
+          x = prefix.except(nil).transform_keys { |k| "xmlns:#{k}" }
           root = x.merge(root)
         end
       end
